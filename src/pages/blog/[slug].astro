@@ -1,0 +1,322 @@
+---
+import { getCollection } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+import Layout from '../../layouts/Layout.astro'
+
+export const getStaticPaths = (async () => {
+  const posts = await getCollection('blog')
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }))
+}) satisfies GetStaticPaths
+
+const { post } = Astro.props
+const { Content } = await post.render()
+---
+
+<Layout title={`${post.data.title} | Blog`} description={post.data.description}>
+  <main class="blog-post">
+    <article class="post-container">
+      <!-- Header -->
+      <header class="post-header">
+        <div class="post-meta">
+          <time datetime={post.data.pubDate.toISOString()}>
+            {
+              post.data.pubDate.toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })
+            }
+          </time>
+          {
+            post.data.tags.length > 0 && (
+              <div class="tags">
+                {post.data.tags.map((tag) => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </div>
+            )
+          }
+        </div>
+        <h1 class="post-title">{post.data.title}</h1>
+        <p class="post-description">{post.data.description}</p>
+
+        <!-- Links -->
+        {
+          (post.data.github || post.data.npm) && (
+            <div class="post-links">
+              {post.data.github && (
+                <a href={post.data.github} target="_blank" rel="noopener noreferrer" class="link-button">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                  </svg>
+                  GitHub
+                </a>
+              )}
+              {post.data.npm && (
+                <a href={post.data.npm} target="_blank" rel="noopener noreferrer" class="link-button">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M0 10v4h6v2h6v-2h12v-4H0zm6 2H4v-2h2v2zm12 0h-2v2h-2v-2h-2v2h-2v-2H8V8h10v4zm-2-2h-2v2h2v-2zm-6 0h-2v2h2v-2z" />
+                  </svg>
+                  npm
+                </a>
+              )}
+            </div>
+          )
+        }
+      </header>
+
+      <!-- Content -->
+      <div class="post-content prose">
+        <Content />
+      </div>
+
+      <!-- Footer -->
+      <footer class="post-footer">
+        <a href="/blog" class="back-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back to Blog
+        </a>
+      </footer>
+    </article>
+  </main>
+</Layout>
+
+<style>
+  .blog-post {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0a0e1c 0%, #141b36 50%, #0a0e1c 100%);
+    padding: 6rem 0;
+  }
+
+  .post-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* Header */
+  .post-header {
+    margin-bottom: 4rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(184, 152, 74, 0.2);
+  }
+
+  .post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    padding: 0.25rem 0.75rem;
+    background: rgba(184, 152, 74, 0.1);
+    border: 1px solid rgba(184, 152, 74, 0.2);
+    border-radius: 100px;
+    font-size: 0.75rem;
+    color: #b8984a;
+  }
+
+  .post-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 300;
+    color: #f8f9fa;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-description {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: #adb5bd;
+    margin-bottom: 2rem;
+  }
+
+  .post-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .link-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: rgba(184, 152, 74, 0.1);
+    border: 1px solid rgba(184, 152, 74, 0.3);
+    border-radius: 4px;
+    color: #b8984a;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .link-button:hover {
+    background: rgba(184, 152, 74, 0.2);
+    border-color: rgba(184, 152, 74, 0.5);
+    transform: translateY(-2px);
+  }
+
+  .link-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Content - Prose Styles */
+  .post-content {
+    margin-bottom: 4rem;
+  }
+
+  .prose :global(h2) {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 400;
+    color: #f8f9fa;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.3;
+  }
+
+  .prose :global(h3) {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #f8f9fa;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .prose :global(h4) {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #dee2e6;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .prose :global(p) {
+    color: #adb5bd;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+
+  .prose :global(a) {
+    color: #b8984a;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(184, 152, 74, 0.3);
+    transition: border-color 0.3s ease;
+  }
+
+  .prose :global(a:hover) {
+    border-bottom-color: #b8984a;
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  .prose :global(li) {
+    margin-bottom: 0.5rem;
+    line-height: 1.7;
+  }
+
+  .prose :global(code) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875em;
+    background: rgba(39, 53, 94, 0.5);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    color: #b8984a;
+  }
+
+  .prose :global(pre) {
+    background: rgba(39, 53, 94, 0.5);
+    border: 1px solid rgba(184, 152, 74, 0.2);
+    border-radius: 8px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+
+  .prose :global(pre code) {
+    background: none;
+    padding: 0;
+    color: #dee2e6;
+  }
+
+  .prose :global(blockquote) {
+    border-left: 3px solid #b8984a;
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+    color: #dee2e6;
+    font-style: italic;
+  }
+
+  .prose :global(hr) {
+    border: none;
+    border-top: 1px solid rgba(184, 152, 74, 0.2);
+    margin: 3rem 0;
+  }
+
+  /* Footer */
+  .post-footer {
+    padding-top: 2rem;
+    border-top: 1px solid rgba(184, 152, 74, 0.2);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #b8984a;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .back-link:hover {
+    gap: 0.75rem;
+  }
+
+  .back-link svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .blog-post {
+      padding: 4rem 0;
+    }
+
+    .post-header {
+      margin-bottom: 3rem;
+    }
+
+    .post-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+  }
+</style>
