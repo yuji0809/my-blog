@@ -25,7 +25,7 @@ const latestPosts = (await getCollection('blog'))
       エラーを回避するための重要な設定。
     -->
     <TopHero client:only="svelte" />
-    
+
     <!-- Latest Posts -->
     <section class="content-section">
       <div class="container">
@@ -76,6 +76,7 @@ const latestPosts = (await getCollection('blog'))
 
 <style>
   .content-section {
+    min-height: 100vh;
     padding: 6rem 2rem;
     background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
   }

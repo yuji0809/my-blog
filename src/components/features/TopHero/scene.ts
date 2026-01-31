@@ -1,12 +1,13 @@
 /**
- * HeroScene - 静謐で洗練された3D表現
+ * HeroScene - レイマーチング・フラクタルシェーダー
  *
  * コロケーション原則に基づき、このファイルは
  * 同一ディレクトリの index.svelte からのみ使用される。
  *
  * デザインコンセプト:
- * - 彩度を落とした落ち着いた色調
- * - ゆっくりと浮遊するジオメトリック要素
+ * - 計算で生成される複雑な3D構造（Mandelbulbフラクタル）
+ * - エンジニアリング感のある洗練された雰囲気
+ * - レイマーチング技術による数学的美しさ
  * - 静謐だがリッチな視覚体験
  */
 
@@ -18,16 +19,6 @@ import * as THREE from 'three'
 interface HeroSceneConfig {
   canvas: HTMLCanvasElement
   backgroundColor?: number
-  particleCount?: number
-}
-
-interface FloatingMesh extends THREE.Mesh {
-  userData: {
-    rotationSpeed: THREE.Vector3
-    floatSpeed: number
-    floatOffset: number
-    originalY: number
-  }
 }
 
 // ========================
@@ -49,14 +40,13 @@ export class HeroScene {
   private renderer: THREE.WebGLRenderer
   private scene: THREE.Scene
   private camera: THREE.PerspectiveCamera
-  private floatingMeshes: FloatingMesh[] = []
-  private particles: THREE.Points | null = null
+  private raymarchMesh: THREE.Mesh | null = null
   private animationId: number | null = null
   private clock: THREE.Clock
   private isDisposed = false
 
   constructor(config: HeroSceneConfig) {
-    const { canvas, backgroundColor = PALETTE.background, particleCount = 800 } = config
+    const { canvas, backgroundColor = PALETTE.background } = config
 
     // Clock初期化
     this.clock = new THREE.Clock()
@@ -72,25 +62,22 @@ export class HeroScene {
     this.renderer.setSize(canvas.clientWidth, canvas.clientHeight)
     this.renderer.setClearColor(backgroundColor, 1)
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping
-    this.renderer.toneMappingExposure = 0.8
+    this.renderer.toneMappingExposure = 1.0
 
     // Scene
     this.scene = new THREE.Scene()
-    this.scene.fog = new THREE.FogExp2(PALETTE.fog, 0.015)
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(
-      60,
+      45,
       canvas.clientWidth / canvas.clientHeight,
       0.1,
-      1000
+      100
     )
-    this.camera.position.set(0, 0, 30)
+    this.camera.position.set(0, 0, 3.5)
 
-    // シーン構築
-    this.setupLights()
-    this.createFloatingGeometries()
-    this.createParticleField(particleCount)
+    // レイマーチングシーン構築
+    this.createRaymarchScene()
 
     // イベントリスナー
     this.handleResize = this.handleResize.bind(this)
@@ -98,183 +85,247 @@ export class HeroScene {
   }
 
   // ========================
-  // ライティング設定
+  // レイマーチングシーンの生成
   // ========================
-  private setupLights(): void {
-    // 環境光（柔らかく全体を照らす）
-    const ambientLight = new THREE.AmbientLight(PALETTE.ambient, 0.4)
-    this.scene.add(ambientLight)
+  private createRaymarchScene(): void {
+    // フルスクリーンクアッド用のジオメトリ
+    const geometry = new THREE.PlaneGeometry(2, 2)
 
-    // メインライト（右上から）
-    const mainLight = new THREE.DirectionalLight(0xffffff, 0.6)
-    mainLight.position.set(10, 15, 10)
-    this.scene.add(mainLight)
+    // カラーパレットをシェーダー用に正規化
+    const bgColor = new THREE.Color(PALETTE.background)
+    const primaryColor = new THREE.Color(PALETTE.primary)
+    const secondaryColor = new THREE.Color(PALETTE.secondary)
+    const accentColor = new THREE.Color(PALETTE.accent)
 
-    // アクセントライト（左下から金色系）
-    const accentLight = new THREE.PointLight(PALETTE.accent, 0.3, 50)
-    accentLight.position.set(-15, -10, 5)
-    this.scene.add(accentLight)
-
-    // 反射用ライト（後方から）
-    const rimLight = new THREE.DirectionalLight(0x4466aa, 0.2)
-    rimLight.position.set(-5, 5, -10)
-    this.scene.add(rimLight)
-  }
-
-  // ========================
-  // 浮遊するジオメトリの生成
-  // ========================
-  private createFloatingGeometries(): void {
-    // マテリアル定義
-    const materials = {
-      primary: new THREE.MeshStandardMaterial({
-        color: PALETTE.primary,
-        roughness: 0.7,
-        metalness: 0.3,
-        transparent: true,
-        opacity: 0.85,
-      }),
-      secondary: new THREE.MeshStandardMaterial({
-        color: PALETTE.secondary,
-        roughness: 0.8,
-        metalness: 0.2,
-        transparent: true,
-        opacity: 0.7,
-      }),
-      accent: new THREE.MeshStandardMaterial({
-        color: PALETTE.accent,
-        roughness: 0.4,
-        metalness: 0.6,
-        transparent: true,
-        opacity: 0.6,
-        emissive: PALETTE.accent,
-        emissiveIntensity: 0.1,
-      }),
-    }
-
-    // ジオメトリ定義
-    const geometries = [
-      new THREE.IcosahedronGeometry(2, 0),
-      new THREE.OctahedronGeometry(1.5, 0),
-      new THREE.TetrahedronGeometry(1.8, 0),
-      new THREE.TorusGeometry(1.2, 0.4, 8, 24),
-      new THREE.DodecahedronGeometry(1.3, 0),
-    ]
-
-    // 配置パターン
-    const positions = [
-      { x: -12, y: 5, z: -5 },
-      { x: 10, y: -3, z: -8 },
-      { x: -6, y: -6, z: -3 },
-      { x: 8, y: 7, z: -10 },
-      { x: 0, y: 0, z: -15 },
-      { x: -15, y: -2, z: -12 },
-      { x: 14, y: 4, z: -6 },
-      { x: -3, y: 8, z: -4 },
-    ]
-
-    positions.forEach((pos, i) => {
-      const geometry = geometries[i % geometries.length]
-      const materialKeys = Object.keys(materials) as (keyof typeof materials)[]
-      const material = materials[materialKeys[i % materialKeys.length]]
-
-      const mesh = new THREE.Mesh(geometry, material)
-      mesh.position.set(pos.x, pos.y, pos.z)
-
-      // ランダムな回転と浮遊パラメータ
-      mesh.userData = {
-        rotationSpeed: new THREE.Vector3(
-          (Math.random() - 0.5) * 0.003,
-          (Math.random() - 0.5) * 0.003,
-          (Math.random() - 0.5) * 0.002
-        ),
-        floatSpeed: 0.3 + Math.random() * 0.4,
-        floatOffset: Math.random() * Math.PI * 2,
-        originalY: pos.y,
-      }
-
-      mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI)
-
-      this.floatingMeshes.push(mesh as unknown as FloatingMesh)
-      this.scene.add(mesh)
-    })
-  }
-
-  // ========================
-  // パーティクルフィールドの生成
-  // ========================
-  private createParticleField(count: number): void {
-    const geometry = new THREE.BufferGeometry()
-    const positions = new Float32Array(count * 3)
-    const sizes = new Float32Array(count)
-
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3
-      // 球状に分布させる
-      const radius = 20 + Math.random() * 40
-      const theta = Math.random() * Math.PI * 2
-      const phi = Math.acos(2 * Math.random() - 1)
-
-      positions[i3] = radius * Math.sin(phi) * Math.cos(theta)
-      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
-      positions[i3 + 2] = radius * Math.cos(phi)
-
-      sizes[i] = 0.5 + Math.random() * 1.5
-    }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1))
-
-    // シェーダーマテリアル（よりリッチな表現）
+    // レイマーチング用シェーダーマテリアル
     const material = new THREE.ShaderMaterial({
       uniforms: {
         uTime: { value: 0 },
-        uColor: { value: new THREE.Color(PALETTE.accent) },
-        uSize: { value: 2.0 },
+        uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        uCameraPos: { value: this.camera.position },
+        uBackgroundColor: { value: bgColor },
+        uPrimaryColor: { value: primaryColor },
+        uSecondaryColor: { value: secondaryColor },
+        uAccentColor: { value: accentColor },
       },
       vertexShader: `
-        attribute float size;
-        uniform float uTime;
-        uniform float uSize;
-        varying float vAlpha;
+        varying vec2 vUv;
         
         void main() {
-          vec3 pos = position;
-          
-          // 緩やかな揺らぎ
-          float wave = sin(uTime * 0.2 + position.x * 0.1) * 0.5;
-          pos.y += wave;
-          
-          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-          gl_PointSize = size * uSize * (200.0 / -mvPosition.z);
-          gl_Position = projectionMatrix * mvPosition;
-          
-          // 距離に応じた透明度
-          vAlpha = smoothstep(60.0, 20.0, length(position));
+          vUv = uv;
+          gl_Position = vec4(position, 1.0);
         }
       `,
       fragmentShader: `
-        uniform vec3 uColor;
-        varying float vAlpha;
+        uniform float uTime;
+        uniform vec2 uResolution;
+        uniform vec3 uCameraPos;
+        uniform vec3 uBackgroundColor;
+        uniform vec3 uPrimaryColor;
+        uniform vec3 uSecondaryColor;
+        uniform vec3 uAccentColor;
         
+        varying vec2 vUv;
+        
+        // ========================
+        // Constants
+        // ========================
+        #define MAX_STEPS 80
+        #define MAX_DIST 20.0
+        #define SURF_DIST 0.001
+        #define PI 3.14159265359
+        
+        // ========================
+        // Utility Functions
+        // ========================
+        mat2 rot2D(float a) {
+          float s = sin(a);
+          float c = cos(a);
+          return mat2(c, -s, s, c);
+        }
+        
+        // ========================
+        // SDF Functions
+        // ========================
+        
+        // Mandelbulb フラクタル SDF
+        float mandelbulb(vec3 p) {
+          vec3 z = p;
+          float dr = 1.0;
+          float r = 0.0;
+          float power = 8.0 + sin(uTime * 0.1) * 2.0; // 時間で変化
+          
+          for (int i = 0; i < 8; i++) {
+            r = length(z);
+            if (r > 2.0) break;
+            
+            // Spherical coordinates
+            float theta = acos(z.z / r);
+            float phi = atan(z.y, z.x);
+            dr = pow(r, power - 1.0) * power * dr + 1.0;
+            
+            // Scale and rotate
+            float zr = pow(r, power);
+            theta = theta * power;
+            phi = phi * power;
+            
+            // Convert back to cartesian
+            z = zr * vec3(
+              sin(theta) * cos(phi),
+              sin(phi) * sin(theta),
+              cos(theta)
+            );
+            z += p;
+          }
+          
+          return 0.5 * log(r) * r / dr;
+        }
+        
+        // Smooth minimum
+        float smin(float a, float b, float k) {
+          float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+          return mix(b, a, h) - k * h * (1.0 - h);
+        }
+        
+        // シンプルな球
+        float sdSphere(vec3 p, float r) {
+          return length(p) - r;
+        }
+        
+        // メインシーンSDF
+        float sceneSDF(vec3 p) {
+          // 回転を適用
+          vec3 pos = p;
+          pos.xz *= rot2D(uTime * 0.05);
+          pos.yz *= rot2D(uTime * 0.03);
+          
+          // Mandelbulbフラクタル
+          float bulb = mandelbulb(pos * 0.8) / 0.8;
+          
+          // 周囲に小さな球を配置（エンジニアリング感）
+          float orbs = MAX_DIST;
+          for (int i = 0; i < 6; i++) {
+            float angle = float(i) * PI / 3.0 + uTime * 0.2;
+            vec3 orbPos = vec3(cos(angle) * 2.0, sin(angle * 1.3) * 0.5, sin(angle) * 2.0);
+            orbs = smin(orbs, sdSphere(p - orbPos, 0.15), 0.3);
+          }
+          
+          return smin(bulb, orbs, 0.5);
+        }
+        
+        // ========================
+        // Raymarching
+        // ========================
+        float raymarch(vec3 ro, vec3 rd) {
+          float dO = 0.0;
+          
+          for (int i = 0; i < MAX_STEPS; i++) {
+            vec3 p = ro + rd * dO;
+            float dS = sceneSDF(p);
+            dO += dS;
+            
+            if (dO > MAX_DIST || abs(dS) < SURF_DIST) break;
+          }
+          
+          return dO;
+        }
+        
+        // 法線計算
+        vec3 getNormal(vec3 p) {
+          float d = sceneSDF(p);
+          vec2 e = vec2(0.001, 0.0);
+          
+          vec3 n = d - vec3(
+            sceneSDF(p - e.xyy),
+            sceneSDF(p - e.yxy),
+            sceneSDF(p - e.yyx)
+          );
+          
+          return normalize(n);
+        }
+        
+        // ========================
+        // Lighting & Shading
+        // ========================
+        vec3 getLight(vec3 p, vec3 rd, vec3 color) {
+          vec3 normal = getNormal(p);
+          
+          // メインライト（上から）
+          vec3 lightPos1 = vec3(3.0, 4.0, 2.0);
+          vec3 lightDir1 = normalize(lightPos1 - p);
+          float diff1 = max(dot(normal, lightDir1), 0.0);
+          
+          // リムライト（後方から）
+          vec3 lightPos2 = vec3(-2.0, 1.0, -3.0);
+          vec3 lightDir2 = normalize(lightPos2 - p);
+          float diff2 = max(dot(normal, lightDir2), 0.0);
+          
+          // アンビエント・オクルージョン（簡易）
+          float ao = 1.0 - (float(MAX_STEPS) - raymarch(p + normal * 0.1, normal)) / float(MAX_STEPS);
+          ao = pow(ao, 1.5);
+          
+          // フレネル効果
+          float fresnel = pow(1.0 - max(dot(-rd, normal), 0.0), 3.0);
+          
+          // カラーグラデーション（高さベース）
+          vec3 baseColor = mix(color, uAccentColor, smoothstep(-1.0, 1.0, p.y));
+          baseColor = mix(baseColor, uSecondaryColor, fresnel * 0.3);
+          
+          // ライティング合成
+          vec3 diffuse = baseColor * (diff1 * 0.7 + diff2 * 0.3);
+          vec3 ambient = baseColor * 0.3 * ao;
+          vec3 rim = uAccentColor * fresnel * 0.4;
+          
+          return diffuse + ambient + rim;
+        }
+        
+        // ========================
+        // Main
+        // ========================
         void main() {
-          // 円形のパーティクル
-          float dist = length(gl_PointCoord - vec2(0.5));
-          if (dist > 0.5) discard;
+          // UV座標を正規化（アスペクト比考慮）
+          vec2 uv = (vUv - 0.5) * 2.0;
+          uv.x *= uResolution.x / uResolution.y;
           
-          // 柔らかいエッジ
-          float alpha = smoothstep(0.5, 0.1, dist) * vAlpha * 0.6;
+          // レイの設定
+          vec3 ro = uCameraPos; // レイの原点
+          vec3 rd = normalize(vec3(uv, -1.5)); // レイの方向
           
-          gl_FragColor = vec4(uColor, alpha);
+          // カメラの緩やかな回転
+          rd.xz *= rot2D(sin(uTime * 0.1) * 0.1);
+          rd.yz *= rot2D(cos(uTime * 0.08) * 0.05);
+          
+          // レイマーチング実行
+          float d = raymarch(ro, rd);
+          
+          // カラーリング
+          vec3 color = uBackgroundColor;
+          
+          if (d < MAX_DIST) {
+            vec3 p = ro + rd * d;
+            color = getLight(p, rd, uPrimaryColor);
+            
+            // 距離によるフォグ
+            float fogAmount = 1.0 - exp(-d * 0.15);
+            color = mix(color, uBackgroundColor, fogAmount);
+          } else {
+            // 背景にグラデーション
+            float gradient = smoothstep(-1.0, 1.0, uv.y);
+            color = mix(uBackgroundColor, uBackgroundColor * 0.95, gradient);
+          }
+          
+          // トーンマッピング（柔らかく）
+          color = color / (color + vec3(1.0));
+          color = pow(color, vec3(1.0 / 2.2)); // ガンマ補正
+          
+          gl_FragColor = vec4(color, 1.0);
         }
       `,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
+      side: THREE.DoubleSide,
     })
 
-    this.particles = new THREE.Points(geometry, material)
-    this.scene.add(this.particles)
+    this.raymarchMesh = new THREE.Mesh(geometry, material)
+    this.scene.add(this.raymarchMesh)
   }
 
   // ========================
@@ -289,29 +340,12 @@ export class HeroScene {
       this.animationId = requestAnimationFrame(animate)
       const elapsed = this.clock.getElapsedTime()
 
-      // 浮遊オブジェクトのアニメーション
-      for (const mesh of this.floatingMeshes) {
-        const { rotationSpeed, floatSpeed, floatOffset, originalY } = mesh.userData
-
-        // 緩やかな回転
-        mesh.rotation.x += rotationSpeed.x
-        mesh.rotation.y += rotationSpeed.y
-        mesh.rotation.z += rotationSpeed.z
-
-        // 浮遊運動（sin波で上下）
-        mesh.position.y = originalY + Math.sin(elapsed * floatSpeed + floatOffset) * 1.5
-      }
-
-      // パーティクルのアニメーション
-      if (this.particles) {
-        const material = this.particles.material as THREE.ShaderMaterial
+      // シェーダーのuniform更新
+      if (this.raymarchMesh) {
+        const material = this.raymarchMesh.material as THREE.ShaderMaterial
         material.uniforms.uTime.value = elapsed
-        this.particles.rotation.y = elapsed * 0.02
+        material.uniforms.uCameraPos.value.copy(this.camera.position)
       }
-
-      // カメラの緩やかな揺らぎ
-      this.camera.position.x = Math.sin(elapsed * 0.1) * 0.5
-      this.camera.position.y = Math.cos(elapsed * 0.08) * 0.3
 
       this.renderer.render(this.scene, this.camera)
     }
@@ -333,6 +367,12 @@ export class HeroScene {
       this.renderer.setSize(width, height, false)
       this.camera.aspect = width / height
       this.camera.updateProjectionMatrix()
+
+      // シェーダーの解像度更新
+      if (this.raymarchMesh) {
+        const material = this.raymarchMesh.material as THREE.ShaderMaterial
+        material.uniforms.uResolution.value.set(width, height)
+      }
     }
   }
 
@@ -351,28 +391,18 @@ export class HeroScene {
     window.removeEventListener('resize', this.handleResize)
 
     // メッシュのクリーンアップ
-    for (const mesh of this.floatingMeshes) {
-      mesh.geometry.dispose()
-      if (mesh.material instanceof THREE.Material) {
-        mesh.material.dispose()
+    if (this.raymarchMesh) {
+      this.raymarchMesh.geometry.dispose()
+      if (this.raymarchMesh.material instanceof THREE.Material) {
+        this.raymarchMesh.material.dispose()
       }
-      this.scene.remove(mesh)
-    }
-
-    // パーティクルのクリーンアップ
-    if (this.particles) {
-      this.particles.geometry.dispose()
-      if (this.particles.material instanceof THREE.Material) {
-        this.particles.material.dispose()
-      }
-      this.scene.remove(this.particles)
+      this.scene.remove(this.raymarchMesh)
     }
 
     // レンダラーのクリーンアップ
     this.renderer.dispose()
 
-    // 配列クリア
-    this.floatingMeshes = []
-    this.particles = null
+    // 参照クリア
+    this.raymarchMesh = null
   }
 }
