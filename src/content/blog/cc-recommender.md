@@ -1,11 +1,17 @@
 ---
 title: 'CC-Recommender: Claude Code向けインテリジェント推薦システム'
 description: 'プロジェクトを自動分析し、最適なプラグイン、MCPサーバー、スキルを提案するMCPサーバーを開発・公開しました。'
-pubDate: 2026-01-29
+pubDate: 2026-01-29T00:00:00.000Z
 tags: ['MCP', 'Claude Code', 'TypeScript', 'Open Source']
 featured: true
 github: 'https://github.com/yuji0809/cc-recommender'
 npm: 'https://www.npmjs.com/package/@yuji0809/cc-recommender'
+externalLinks:
+  - platform: 'qiita'
+    url: 'https://qiita.com/example'
+    title: 'CC-Recommenderの開発と公開'
+  - platform: 'zenn'
+    url: 'https://zenn.dev/example'
 ---
 
 ## プロジェクト概要
@@ -37,7 +43,7 @@ GitHubから最新情報を毎週自動取得し、常に最新の推薦を提�
 ### 3つのセットアップ方法
 
 #### 1. npx経由（推奨）
-\`\`\`json
+```json
 // ~/.claude/settings.json
 {
   "mcpServers": {
@@ -47,20 +53,20 @@ GitHubから最新情報を毎週自動取得し、常に最新の推薦を提�
     }
   }
 }
-\`\`\`
+```
 
 #### 2. グローバルインストール
-\`\`\`bash
+```bash
 npm install -g @yuji0809/cc-recommender
-\`\`\`
+```
 
 #### 3. ローカル開発
-\`\`\`bash
+```bash
 git clone https://github.com/yuji0809/cc-recommender.git
 cd cc-recommender
 pnpm install
 pnpm build
-\`\`\`
+```
 
 ## 使用例
 

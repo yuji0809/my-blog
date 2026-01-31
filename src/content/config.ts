@@ -13,6 +13,16 @@ const blog = defineCollection({
     featured: z.boolean().default(false),
     github: z.string().optional(),
     npm: z.string().optional(),
+    externalLinks: z
+      .array(
+        z.object({
+          platform: z.enum(['qiita', 'zenn', 'note', 'dev.to', 'medium', 'hatena', 'other']),
+          url: z.string().url(),
+          title: z.string().optional(),
+        })
+      )
+      .optional()
+      .default([]),
   }),
 })
 

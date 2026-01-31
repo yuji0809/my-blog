@@ -16,7 +16,7 @@ const latestPosts = (await getCollection('blog'))
   .slice(0, 3)
 ---
 
-<Layout title="Tech Blog | Thoughts on Engineering">
+<Layout title="jiiiyuuu.dv | Tech Blog">
   <main>
     <!-- 
       client:only="svelte" を使用することで、
@@ -77,7 +77,7 @@ const latestPosts = (await getCollection('blog'))
 <style>
   .content-section {
     padding: 6rem 2rem;
-    background: linear-gradient(180deg, #0a0e1c 0%, #141b36 100%);
+    background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
   }
 
   .container {
@@ -90,13 +90,13 @@ const latestPosts = (await getCollection('blog'))
     font-family: 'Cormorant Garamond', Garamond, serif;
     font-size: 2.5rem;
     font-weight: 300;
-    color: #f8f9fa;
+    color: var(--color-text-primary);
     text-align: center;
   }
 
   .section-description {
     font-size: 1.125rem;
-    color: #6c757d;
+    color: var(--color-text-tertiary);
     text-align: center;
   }
 
@@ -109,8 +109,8 @@ const latestPosts = (await getCollection('blog'))
   }
 
   .post-card {
-    background: rgba(39, 53, 94, 0.2);
-    border: 1px solid rgba(184, 152, 74, 0.15);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     transition: all 0.3s ease;
     overflow: hidden;
@@ -118,8 +118,8 @@ const latestPosts = (await getCollection('blog'))
 
   .post-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(184, 152, 74, 0.3);
-    box-shadow: 0 8px 24px rgba(184, 152, 74, 0.1);
+    border-color: var(--color-border-strong);
+    box-shadow: 0 8px 24px rgba(184, 111, 79, 0.1);
   }
 
   .post-link {
@@ -135,29 +135,29 @@ const latestPosts = (await getCollection('blog'))
     align-items: center;
     margin-bottom: 1rem;
     font-size: 0.875rem;
-    color: #6c757d;
+    color: var(--color-text-tertiary);
   }
 
   .post-tag {
     padding: 0.25rem 0.75rem;
-    background: rgba(184, 152, 74, 0.1);
-    border: 1px solid rgba(184, 152, 74, 0.2);
+    background: rgba(184, 111, 79, 0.1);
+    border: 1px solid var(--color-border-strong);
     border-radius: 100px;
     font-size: 0.75rem;
-    color: #b8984a;
+    color: var(--color-accent);
   }
 
   .post-title {
     font-family: 'Cormorant Garamond', Garamond, serif;
     font-size: 1.5rem;
     font-weight: 400;
-    color: #f8f9fa;
+    color: var(--color-text-primary);
     margin-bottom: 0.75rem;
     line-height: 1.3;
   }
 
   .post-description {
-    color: #adb5bd;
+    color: var(--color-text-secondary);
     line-height: 1.6;
     margin-bottom: 1rem;
     display: -webkit-box;
@@ -167,7 +167,7 @@ const latestPosts = (await getCollection('blog'))
   }
 
   .read-more {
-    color: #b8984a;
+    color: var(--color-accent);
     font-size: 0.875rem;
     font-weight: 500;
   }
@@ -186,9 +186,9 @@ const latestPosts = (await getCollection('blog'))
     align-items: center;
     gap: 0.5rem;
     padding: 0.875rem 2rem;
-    color: #f8f9fa;
+    color: var(--color-text-primary);
     background: transparent;
-    border: 1px solid rgba(248, 249, 250, 0.3);
+    border: 1px solid var(--color-border-strong);
     border-radius: 4px;
     font-size: 0.875rem;
     font-weight: 500;
@@ -197,8 +197,8 @@ const latestPosts = (await getCollection('blog'))
   }
 
   .view-all-link:hover {
-    background: rgba(248, 249, 250, 0.05);
-    border-color: rgba(248, 249, 250, 0.5);
+    background: var(--color-bg-tertiary);
+    border-color: var(--color-accent);
   }
 
   .view-all-link svg {

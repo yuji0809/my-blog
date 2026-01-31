@@ -31,15 +31,15 @@ interface FloatingMesh extends THREE.Mesh {
 }
 
 // ========================
-// カラーパレット（落ち着いた大人の雰囲気）
+// カラーパレット（明るく温かみのある大人の雰囲気）
 // ========================
 const PALETTE = {
-  background: 0x0a0e1c, // navy-950: 深い夜のような背景
-  primary: 0x27355e, // navy-700: 主要オブジェクト
-  secondary: 0x1e294f, // navy-800: 副次オブジェクト
-  accent: 0xb8984a, // gold-500: アクセント（控えめな金）
-  ambient: 0x141b36, // navy-900: 環境光
-  fog: 0x0a0e1c, // 霧の色
+  background: 0xfaf8f3, // cream-100: 明るいクリーム背景
+  primary: 0xb8a38a, // mocha-300: 主要オブジェクト
+  secondary: 0xd4c4b0, // mocha-200: 副次オブジェクト
+  accent: 0xb86f4f, // terracotta-500: アクセント（温かみのあるテラコッタ）
+  ambient: 0xede6d9, // cream-300: 環境光
+  fog: 0xfaf8f3, // 霧の色
 } as const
 
 // ========================

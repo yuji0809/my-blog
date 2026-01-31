@@ -5,6 +5,8 @@
  * 全ページで共有されるHTML構造、メタタグ、フォント読み込みを定義
  */
 
+import Header from '../components/ui/Header.astro'
+
 interface Props {
   title: string
   description?: string
@@ -24,6 +26,22 @@ const {
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
 
+    <!-- テーマ初期化スクリプト (FO
+
+UCの防止) -->
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme')
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark'
+        }
+        return 'light'
+      })()
+      document.documentElement.setAttribute('data-theme', theme)
+    </script>
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
@@ -38,6 +56,7 @@ const {
     <title>{title}</title>
   </head>
   <body>
+    <Header />
     <slot />
   </body>
 </html>
@@ -60,13 +79,54 @@ const {
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* ========================
+     CSS Variables - Light Mode (Default)
+     ======================== */
+  :root {
+    --color-bg-primary: #faf8f3;
+    --color-bg-secondary: #f5f1e8;
+    --color-bg-tertiary: #ede6d9;
+    --color-bg-header: rgba(250, 248, 243, 0.95);
+    --color-bg-code: #f5f1e8;
+    --color-bg-code-inline: rgba(157, 131, 103, 0.15);
+    --color-text-primary: #3d3735;
+    --color-text-secondary: #5a5350;
+    --color-text-tertiary: #9d8367;
+    --color-accent: #b86f4f;
+    --color-accent-hover: #c87d5c;
+    --color-border: rgba(157, 131, 103, 0.1);
+    --color-border-strong: rgba(184, 111, 79, 0.2);
+  }
+
+  /* ========================
+     CSS Variables - Dark Mode
+     ======================== */
+  [data-theme='dark'] {
+    --color-bg-primary: #1a1614;
+    --color-bg-secondary: #2a2523;
+    --color-bg-tertiary: #3d3735;
+    --color-bg-header: rgba(26, 22, 20, 0.95);
+    --color-bg-code: #2a2523;
+    --color-bg-code-inline: rgba(184, 152, 74, 0.15);
+    --color-text-primary: #ede6d9;
+    --color-text-secondary: #d4c4b0;
+    --color-text-tertiary: #b8a38a;
+    --color-accent: #c87d5c;
+    --color-accent-hover: #d98d6c;
+    --color-border: rgba(237, 230, 217, 0.1);
+    --color-border-strong: rgba(200, 125, 92, 0.3);
+  }
+
   body {
     font-family: 'Source Sans 3', 'Noto Sans JP', sans-serif;
     font-weight: 400;
     line-height: 1.6;
-    color: #dee2e6;
-    background-color: #0a0e1c;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
     overflow-x: hidden;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
 
   /* ========================
@@ -135,15 +195,15 @@ const {
   }
 
   ::-webkit-scrollbar-track {
-    background: #0a0e1c;
+    background: var(--color-bg-primary);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #27355e;
+    background: var(--color-text-tertiary);
     border-radius: 5px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #b8984a;
+    background: var(--color-accent);
   }
 </style>

@@ -92,7 +92,7 @@ onMount(() => {
     height: 100vh;
     min-height: 600px;
     overflow: hidden;
-    background-color: #0a0e1c;
+    background-color: var(--color-bg-primary);
   }
 
   /* ========================
@@ -145,9 +145,9 @@ onMount(() => {
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #b8984a;
-    background: rgba(184, 152, 74, 0.1);
-    border: 1px solid rgba(184, 152, 74, 0.2);
+    color: var(--color-accent);
+    background: rgba(184, 111, 79, 0.1);
+    border: 1px solid var(--color-border-strong);
     border-radius: 100px;
   }
 
@@ -157,7 +157,7 @@ onMount(() => {
     font-size: clamp(2.5rem, 8vw, 5rem);
     font-weight: 300;
     line-height: 1.1;
-    color: #f8f9fa;
+    color: var(--color-text-primary);
   }
 
   .title-line {
@@ -166,7 +166,7 @@ onMount(() => {
 
   .title-accent {
     font-style: italic;
-    color: #b8984a;
+    color: var(--color-accent);
   }
 
   .hero-description {
@@ -175,7 +175,7 @@ onMount(() => {
     font-size: 1.125rem;
     font-weight: 300;
     line-height: 1.8;
-    color: #adb5bd;
+    color: var(--color-text-secondary);
   }
 
   /* ========================
@@ -203,27 +203,27 @@ onMount(() => {
   }
 
   .cta-button.primary {
-    color: #0a0e1c;
-    background: #b8984a;
-    border: 1px solid #b8984a;
+    color: var(--color-bg-primary);
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent);
   }
 
   .cta-button.primary:hover {
-    background: #c4aa62;
-    border-color: #c4aa62;
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(184, 152, 74, 0.25);
+    box-shadow: 0 8px 24px rgba(184, 111, 79, 0.25);
   }
 
   .cta-button.secondary {
-    color: #f8f9fa;
+    color: var(--color-text-primary);
     background: transparent;
-    border: 1px solid rgba(248, 249, 250, 0.3);
+    border: 1px solid var(--color-border-strong);
   }
 
   .cta-button.secondary:hover {
-    background: rgba(248, 249, 250, 0.05);
-    border-color: rgba(248, 249, 250, 0.5);
+    background: var(--color-bg-tertiary);
+    border-color: var(--color-accent);
   }
 
   .cta-icon {
@@ -259,13 +259,13 @@ onMount(() => {
     font-weight: 500;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: #6c757d;
+    color: var(--color-text-tertiary);
   }
 
   .scroll-line {
     width: 1px;
     height: 40px;
-    background: linear-gradient(to bottom, #6c757d, transparent);
+    background: linear-gradient(to bottom, var(--color-text-tertiary), transparent);
     animation: scrollPulse 2s ease-in-out infinite;
   }
 
@@ -278,7 +278,7 @@ onMount(() => {
     left: 0;
     right: 0;
     height: 200px;
-    background: linear-gradient(to top, #0a0e1c, transparent);
+    background: linear-gradient(to top, var(--color-bg-primary), transparent);
     pointer-events: none;
     z-index: 5;
   }
