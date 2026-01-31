@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# ビルドとチェックを実行
+echo "Running type check and build..."
+pnpm astro check
+
+echo "Running Biome checks..."
+pnpm biome check .

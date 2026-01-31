@@ -1,0 +1,16 @@
+# Cloudflare Pages Configuration
+name = "my-blog"
+compatibility_date = "2024-01-01"
+
+# Pages settings
+pages_build_output_dir = "dist"
+
+# KV Namespaces (SESSION binding for cloudflare adapter)
+# Uncomment and configure if using sessions
+# [[kv_namespaces]]
+# binding = "SESSION"
+# id = "your-kv-namespace-id"
+
+# Environment Variables (if needed)
+# [vars]
+# ENVIRONMENT = "production"

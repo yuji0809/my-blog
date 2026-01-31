@@ -1,0 +1,58 @@
+---
+/**
+ * pages/index.astro - トップページ
+ *
+ * TopHero コンポーネントを client:only="svelte" で読み込み、
+ * クライアントサイドでのみThree.jsを実行する。
+ */
+
+import TopHero from '../components/features/TopHero/index.svelte'
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout title="Tech Blog | Thoughts on Engineering">
+  <main>
+    <!-- 
+      client:only="svelte" を使用することで、
+      Three.js を含むコンポーネントがサーバーサイドで実行されない。
+      これはSSR環境でwindowオブジェクトが存在しないことによる
+      エラーを回避するための重要な設定。
+    -->
+    <TopHero client:only="svelte" />
+    
+    <!-- 以下にコンテンツセクションを追加可能 -->
+    <section class="content-section">
+      <div class="container">
+        <h2 class="section-title">Latest Posts</h2>
+        <p class="section-description">
+          Coming soon...
+        </p>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .content-section {
+    padding: 6rem 2rem;
+    background: linear-gradient(180deg, #0a0e1c 0%, #141b36 100%);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    margin-bottom: 1rem;
+    font-family: 'Cormorant Garamond', Garamond, serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: #f8f9fa;
+  }
+
+  .section-description {
+    font-size: 1.125rem;
+    color: #6c757d;
+  }
+</style>
